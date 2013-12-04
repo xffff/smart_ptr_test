@@ -1,3 +1,5 @@
+/* test out unique_ptr because i'm going to use it in a project */
+
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -28,7 +30,7 @@ public:
 
 Base::Base()
 {
-    std::unique_ptr<Derived> temp(new Derived(9,7));
+    std::unique_ptr<Derived> temp(new Derived(genRand(),genRand()));
     derivedClassPtr = std::move(temp);
 }
 
@@ -39,21 +41,16 @@ Base::Base(int numDerived) : numDerived(numDerived)
 
     std::vector<int> rvals;
     for(int j=0; j<numDerived*2; j++)
-	rvals.push_back(rand()%10);
+	rvals.push_back(genRand());
     
     for(int i=0; i<numDerived; i++) {
 	int x = rvals[i];
 	int y = rvals[i+1];
-    	// random values for x and y for every member of the vector
-	std::cout<<i<<": "<<x<<", "<<y<<std::endl;
-    	// temporary unique_ptr
+	
     	std::unique_ptr<Derived> temp(new Derived(x,y));
-    	// shove in this container
     	vDerivedClassPtr.push_back(std::move(temp));
     }
 }
-
-
 
 int main()
 {
@@ -70,12 +67,20 @@ int main()
     for(auto& i : v)
 	std::cout<<"Unique pointer in a vector: "<<*i<<std::endl;
 
+    /* first do this with a single entity of unique pointer to derived class */
     Base* baseClass = new Base();
     std::cout<<"Derived Class X: "<<baseClass->derivedClassPtr->x<<std::endl
 	     <<"Derived Class Y: "<<baseClass->derivedClassPtr->y<<std::endl;
+    delete baseClass;
 
+    /* now create an arbirtrary number of derived classes
+     * and shove the lot in a vector
+     */
     int nDerived = 10;
     Base* vBaseClass = new Base(nDerived); // different constructor
-        
+    for(int i=0; i<nDerived; i++)
+	std::cout<<i<<": "<<vBaseClass->vDerivedClassPtr[i]->x
+		 <<", "<<vBaseClass->vDerivedClassPtr[i]->y<<std::endl;
+    delete vBaseClass;
     return 0;
 }
